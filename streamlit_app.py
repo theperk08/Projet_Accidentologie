@@ -28,7 +28,7 @@ def accueil():
         st.write(f"Bienvenue",)
         selection = option_menu(
             menu_title=None,
-            options=["Accueil", "Visualisations des statistiques"]
+            options=["Accueil", "Choix Visu Statistiques"]
 
         )
 
@@ -39,7 +39,7 @@ def accueil():
         page_accueil()
 
         #st.image(rep_images+"home.jpg")
-    elif selection == "Visualisations des statistiques":
+    elif selection == "Choix Visu Statistiques":
         page_visu()  
 
 
@@ -84,6 +84,7 @@ def page_accueil():
                     # xaxis_title="Catégorie",
                     xaxis_title=None,
                     showlegend=True,
+                    legend_title_text="",
                     title = dict(font=dict(size=15), x=0.5)
                     )
     st.plotly_chart(fig1)
@@ -124,6 +125,7 @@ def page_accueil():
                     # xaxis_title="Catégorie",
                     xaxis_title=None,
                     showlegend=True,
+                    legend_title_text="",
                     title = dict(font=dict(size=15), x=0.5)
                     )
     st.plotly_chart(fig2)
@@ -205,11 +207,10 @@ def page_accueil():
                     title = dict(font=dict(size=15), x=0.5)
     )
 
-    fig4.update_layout(title='Cyclistes impliqués par type d\'endroit')
     st.plotly_chart(fig4)
 
     df6 = df_max
-    fig6 = px.histogram(df6, x='situ', title="Cyclistes par type d'endroit",
+    fig6 = px.histogram(df6, x='situ', title="Gravité Cyclistes par type d'endroit",
                     color='gravity',
                     color_discrete_map = {'Indemne':'green', 'Blessé léger': 'orange', 'Blessé hospitalisé': 'red', 'Tué': 'black' },
                     category_orders={'gravity':['Indemne', 'Blessé léger', 'Blessé hospitalisé', 'Tué']},
@@ -226,7 +227,7 @@ def page_accueil():
                     title = dict(font=dict(size=15), x=0.5)
                     )
 
-    fig6.update_layout(title='Gravité Cyclistes impliqués par type d\'endroit')
+    
     st.plotly_chart(fig6)
 
 
@@ -264,6 +265,7 @@ def page_visu():
                         # xaxis_title="Jour",
                         xaxis_title=None,
                         showlegend=True,
+                        legend_title_text="",
                         title=dict(font=dict(size=15), x=0.5)
                         )
 
@@ -288,6 +290,7 @@ def page_visu():
                         # xaxis_title="Jour",
                         xaxis_title=None,
                         showlegend=True,
+                        legend_title_text="",
                         title = dict(font=dict(size=15), x=0.5)
                         )
 
