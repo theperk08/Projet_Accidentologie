@@ -7,3 +7,9 @@ D'après une idée de :
 [Défis data gouv](https://defis.data.gouv.fr/defis/infrastructures-cyclables)
 
 Données de la base des accidents corporels de la circulation routière : [datasets](https://www.data.gouv.fr/fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2023/)
+
+
+Mise en ligne sur une application Streamlit : [Accidentologie des cyclistes](https://accidentologie-cyclistes.streamlit.app/)
+
+![Application Streamlit](Images/streamlit_app1.jpg)
+
