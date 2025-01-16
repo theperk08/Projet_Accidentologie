@@ -11,8 +11,13 @@ rep_data = "data/"
 
 df_cyclistes = pd.read_csv(rep_data+"df_cyclistes_2023.csv", sep=";")
 
+# victimes cyclistes, avec éventuellement plusieurs lignes pour chaque accident (car intersection de plusieurs lieux)
+df_cyclistes_all = df_cyclistes[df_cyclistes['catv'].isin([1, 80])]
+# victimes cyclistes mais une seule ligne par accident, avec la valeur max
 df_max = df_cyclistes[df_cyclistes['catv'].isin([1, 80])].groupby('id_usager', as_index=False).max()
+# victimes cyclistes mais une seule ligne par accident, avec la 1e valeur
 df_first = df_cyclistes[df_cyclistes['catv'].isin([1, 80])].groupby('id_usager', as_index=False).first()
+
 df_nb_vehicules = df_cyclistes.groupby('Num_Acc', as_index=False)['id_vehicule'].nunique()
 vehicule_multiple = list(df_nb_vehicules[df_nb_vehicules['id_vehicule']>1]['Num_Acc'].unique())
 cycliste_seul = list(df_nb_vehicules[df_nb_vehicules['id_vehicule']==1]['Num_Acc'].unique())
@@ -226,10 +231,8 @@ def page_accueil():
                     legend_title_text="",
                     title = dict(font=dict(size=15), x=0.5)
                     )
-
     
     st.plotly_chart(fig6)
-
 
 
 def page_visu():
@@ -238,11 +241,21 @@ def page_visu():
 
     col1, col2 = st.columns(2)
     
-    vars = {'jour de la semaine': {'df':df_max, 'x': 'day_of_week', 'tickvals': [0,1,2,3,4,5,6], 'ticktext': ['Lundi','Mardi','Mercredi',  'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']},
-             'sens de la circulation' : {'df': df_first, 'x': 'circ', 'tickvals': [-1, 1,2,3,4], 'ticktext': ['Non renseigné', 'A sens unique','Bidirectionnelle','A chaussées séparées',  'Avec voies d’affectation variable']},
-             'condition de surface': {'df': df_first, 'x': 'surf', 'tickvals': [-1, 1,2,3,4,5,6,7,8,9], 'ticktext': ['Non renseigné','Normale', 'Mouillée', 'Flaques', 'Inondée', 'Enneigée', 'Boue', 'Verglacée', 'Corps gras – huile', 'Autre']},
-             'type d\'infrastructure':{'df': df_first, 'x': 'infra', 'tickvals': [-1, 0,1,2,3,4,5,6,7,8,9], 'ticktext': ['Non renseigné', 'Aucun', 'Souterrain - tunnel', 'Pont - autopont', 'Bretelle d’échangeur ou de raccordement', 'Voie ferrée', 'Carrefour aménagé', 'Zone piétonne', 'Zone de péage', 'Chantier', 'Autres']},
+    # d'une manière générale, si la variable 'x' est dans le dataset 'lieux',plusieurs lignes possibles donc alors df=df_cyclistes_all
+    # sinon on peut se contenter de df=df_first car cette caractéristique ne change pas dans les différentes lignes du lieu
+    vars = {'jour de la semaine': {'df':df_first, 'x': 'day_of_week', 'tickvals': [0,1,2,3,4,5,6], 'ticktext': ['Lundi','Mardi','Mercredi',  'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']},
+            'sens de la circulation': {'df': df_cyclistes_all, 'x': 'circ', 'tickvals': [-1, 1,2,3,4], 'ticktext': ['Non renseigné', 'A sens unique','Bidirectionnelle','A chaussées séparées',  'Avec voies d’affectation variable']},
+            'condition de surface': {'df': df_cyclistes_all, 'x': 'surf', 'tickvals': [-1, 1,2,3,4,5,6,7,8,9], 'ticktext': ['Non renseigné','Normale', 'Mouillée', 'Flaques', 'Inondée', 'Enneigée', 'Boue', 'Verglacée', 'Corps gras – huile', 'Autre']},
+            'type d\'infrastructure': {'df':df_cyclistes_all, 'x': 'infra', 'tickvals': [-1, 0,1,2,3,4,5,6,7,8,9], 'ticktext': ['Non renseigné', 'Aucun', 'Souterrain - tunnel', 'Pont - autopont', 'Bretelle d’échangeur ou de raccordement', 'Voie ferrée', 'Carrefour aménagé', 'Zone piétonne', 'Zone de péage', 'Chantier', 'Autres']},
+            'vitesse maximale autorisée': {'df': df_cyclistes_all, 'x': 'vma', 'xaxis_title': 'Vitesse (km/h)'},
+            'condition atmosphérique': {'df': df_first, 'x': 'atm', 'tickvals': [-1, 1,2,3,4,5,6,7,8,9], 'ticktext': ['Non renseigné', 'Normale', 'Pluie légère', 'Pluie forte', 'Neige - grêle', 'Brouillard - fumée', 'Vent fort - tempête', 'Temps éblouissant', 'Temps couvert', 'Autre']},
+            'type de collision': {'df': df_first, 'x': 'col', 'tickvals': [-1, 1,2,3,4,5,6,7], 'ticktext': ['Non renseigné', 'Deux véhicules - frontale', 'Deux véhicules – par l’arrière', 'Deux véhicules – par le côté', 'Trois véhicules et plus – en chaîne', 'Trois véhicules et plus - collisions multiples', 'Autre collision', 'Sans collision']},
+            'situation agglomération': {'df': df_first, 'x': 'agg', 'tickvals': [1,2], 'ticktext': ['Hors agglo', 'En agglo']},
+            'condition de luminosité': {'df': df_first, 'x': 'lum', 'tickvals': [1,2,3,4,5], 'ticktext': ['Plein jour', 'Crépuscule ou aube', 'Nuit sans éclairage public', 'Nuit avec éclairage public non allumé', 'Nuit avec éclairage public allumé']},
+            'type d\'intersection': {'df': df_first, 'x': 'int', 'tickvals': [1,2,3,4,5,6,7,8,9], 'ticktext': ['Hors intersection', 'Intersection en X', 'Intersection en T', 'Intersection en Y', 'Intersection à plus de 4 branches', 'Giratoire', 'Place', 'Passage à niveau', 'Autre intersection']},
             }
+        
+           
     option = st.selectbox(
             "Quel variable veux-tu visualiser ?",
             vars.keys(),
@@ -257,13 +270,13 @@ def page_visu():
                         category_orders={'gravity': ['Indemne', 'Blessé léger', 'Blessé hospitalisé', 'Tué']},
                         # barnorm='percent',
                         text_auto=False)
-
-    fig1.update_xaxes(tickmode="array", tickvals=vars[option]['tickvals'], ticktext=vars[option]['ticktext'])
+    if not('xaxis_title' in vars[option]):
+        fig1.update_xaxes(tickmode="array", tickvals=vars[option]['tickvals'], ticktext=vars[option]['ticktext'])
 
     fig1.update_layout(width=800, height=400,
                        yaxis_title="Nombre",
                         # xaxis_title="Jour",
-                        xaxis_title=None,
+                        xaxis_title=vars[option]['xaxis_title'] if 'xaxis_title' in vars[option] else None,
                         showlegend=True,
                         legend_title_text="",
                         title=dict(font=dict(size=15), x=0.5)
@@ -282,13 +295,13 @@ def page_visu():
                         barnorm='percent',
                         text_auto=False)
 
-
-    fig2.update_xaxes(tickmode="array", tickvals=vars[option]['tickvals'], ticktext=vars[option]['ticktext'])
+    if not('xaxis_title' in vars[option]):
+        fig2.update_xaxes(tickmode="array", tickvals=vars[option]['tickvals'], ticktext=vars[option]['ticktext'])
 
     fig2.update_layout(width=800, height=400,
                         yaxis_title="%",
                         # xaxis_title="Jour",
-                        xaxis_title=None,
+                        xaxis_title=vars[option]['xaxis_title'] if 'xaxis_title' in vars[option] else None,
                         showlegend=True,
                         legend_title_text="",
                         title = dict(font=dict(size=15), x=0.5)
