@@ -1,4 +1,9 @@
 # Projet_Accidentologie
 Projet pour la formation Chef de Projet IA à la Wild Code School
 
-Étude de la gravité des accidents corporels des cyclistes en France
+## **_Étude de la gravité des accidents corporels des cyclistes en France_**
+
+D'après une idée de :
+[Défis data gouv](https://defis.data.gouv.fr/defis/infrastructures-cyclables)
+
+Données de la base des accidents corporels de la circulation routière : [datasets](https://www.data.gouv.fr/fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2023/)
