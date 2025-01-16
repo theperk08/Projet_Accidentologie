@@ -13,3 +13,8 @@ Mise en ligne sur une application Streamlit : [Accidentologie des cyclistes](htt
 
 ![Application Streamlit](Images/streamlit_app1.jpg)
 
+
+TODO :
+- ajouter datasets des années antérieures à 2023
+- ML
+- appli Streamlit : ajouter choix : métropole / outre-mer / département
