@@ -1,10 +1,14 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
+import folium
+from folium.plugins import HeatMap
 
 from streamlit_option_menu import option_menu
+from streamlit_folium import st_folium
 
 rep_images = "images/"
 rep_data = "data/"
@@ -22,6 +26,13 @@ df_nb_vehicules = df_cyclistes.groupby('Num_Acc', as_index=False)['id_vehicule']
 vehicule_multiple = list(df_nb_vehicules[df_nb_vehicules['id_vehicule']>1]['Num_Acc'].unique())
 cycliste_seul = list(df_nb_vehicules[df_nb_vehicules['id_vehicule']==1]['Num_Acc'].unique())
 
+# function for folium map coordinates
+def coord(df_data):
+    data = [[x,y,1] for x,y,_ in zip(df_data['lat'].tolist(), df_data['long'].tolist(),range(df_data.shape[0]))]
+    data = (np.array(data)).tolist()
+    return data
+
+
 
 def accueil():
       # Using object notation
@@ -33,7 +44,7 @@ def accueil():
         st.write(f"Bienvenue",)
         selection = option_menu(
             menu_title=None,
-            options=["Accueil", "Choix Visu Statistiques"]
+            options=["Accueil", "Choix Visu Statistiques", "Maps"]
 
         )
 
@@ -45,7 +56,10 @@ def accueil():
 
         #st.image(rep_images+"home.jpg")
     elif selection == "Choix Visu Statistiques":
-        page_visu()  
+        page_visu() 
+
+    elif selection == "Maps":
+        page_maps() 
 
 
 def page_accueil():
@@ -257,7 +271,7 @@ def page_visu():
         
            
     option = st.selectbox(
-            "Quel variable veux-tu visualiser ?",
+            "Quel variable voulez-vous visualiser ?",
             vars.keys(),
             index=0,
         )
@@ -309,6 +323,82 @@ def page_visu():
 
     fig2.update_layout(title='% Gravité Cyclistes par ' + option)
     st.plotly_chart(fig2)
+
+def page_maps():  
+    
+    # Choix de la carte à afficher
+    option = st.selectbox(
+            "Quelle carte voulez-vous afficher ?",
+            ['Répartition globale', 'Localisation exacte'],
+            index=None,
+        )
+    
+    legend_txt = '<span style="color: {col};">{txt}</span>'
+    df1 = df_max
+
+    if option == "Répartition globale":
+        # Heatmap
+        st.write('Répartition géographique des gravités des accidents corporels des cyclistes')
+        
+        df_grav1 = coord(df1[df1['gravity']=='Indemne'])
+        df_grav2 = coord(df1[df1['gravity']=='Blessé léger'])
+        df_grav3 = coord(df1[df1['gravity']=='Blessé hospitalisé'])
+        df_grav4 = coord(df1[df1['gravity']=='Tué'])
+
+        m_heat = folium.Map([47, 3], zoom_start=6)
+        
+        HeatMap(df_grav1).add_to(folium.FeatureGroup(name=legend_txt.format(txt='Indemne', col='green'), show=False).add_to(m_heat))
+        HeatMap(df_grav2).add_to(folium.FeatureGroup(name=legend_txt.format(txt='Blessé léger', col='orange'), show=False).add_to(m_heat))
+        HeatMap(df_grav3).add_to(folium.FeatureGroup(name=legend_txt.format(txt='Blessé hospitalisé', col='red'), show=False).add_to(m_heat))
+        HeatMap(df_grav4).add_to(folium.FeatureGroup(name=legend_txt.format(txt='Tué', col='black')).add_to(m_heat))
+        folium.LayerControl().add_to(m_heat)
+
+        # call to render Folium map in Streamlit
+        st_data_heatmap = st_folium(m_heat, width=725)
+
+    elif option == "Localisation exacte":
+        # Localisation exacte des accidents
+        st.write("Localisation exacte des accidents des cyclistes")
+        group_1 = folium.FeatureGroup(name=legend_txt.format(txt='Indemne', col='green'), show=False)
+        group_2 = folium.FeatureGroup(name=legend_txt.format(txt='Blessé léger', col='orange'), show=False)
+        group_3 = folium.FeatureGroup(name=legend_txt.format(txt='Blessé hospitalisé', col='red'), show=False)
+        group_4 = folium.FeatureGroup(name=legend_txt.format(txt='Tué', col='black'))
+        dico_group = {'Indemne':group_1, 'Blessé léger':group_2, 'Blessé hospitalisé':group_3, 'Tué':group_4}
+        dico_color = {'Indemne':'green', 'Blessé léger':'orange', 'Blessé hospitalisé':'red', 'Tué':'black'}
+
+        m_markers = folium.Map([47, 3], zoom_start=6)
+
+        for k in range(df1.shape[0]):
+            lat, long = df1.loc[k, ['lat', 'long']]
+            point = (lat, long) # (float(lat.replace(',', '.')), float(long.replace(',', '.')))
+            #print(point)
+
+            # création d'un bel affichage popup
+            html = 'Heure : ' + str(df1.loc[k, 'hrmn']) + '<br>Gravité : ' + str(df1.loc[k, 'gravity']) + '<br>Sexe : ' + str(df1.loc[k, 'sexe']) + '<br>Situation : ' + str(df1.loc[k, 'situ'])  + '<br>Département : ' + str(df1.loc[k, 'dep']) + '<br>Commune : ' + str(df1.loc[k, 'com'])
+            iframe = folium.IFrame(html,
+                            width=200,
+                            height=100)
+            popup = folium.Popup(iframe,
+                            max_width=200)
+            
+            # ajout du marker avec son popup personnalisé
+            folium.Marker(
+                location = point,
+                popup = popup ,    
+                icon=folium.Icon(color=dico_color[df1.loc[k, 'gravity']], prefix='fa',icon='bicycle')
+                            ).add_to(dico_group[df1.loc[k,'gravity']])
+
+
+        group_1.add_to(m_markers)
+        group_2.add_to(m_markers)
+        group_3.add_to(m_markers)
+        group_4.add_to(m_markers)
+
+        folium.LayerControl().add_to(m_markers)
+
+        st_data_markers = st_folium(m_markers, width=725)
+    
+
 
     
 accueil()
