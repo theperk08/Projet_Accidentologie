@@ -6,4 +6,4 @@ matplotlib
 plotly
 streamlit_option_menu
 folium
-streamit-folium
+streamlit-folium
