@@ -503,20 +503,20 @@ def page_predictions():
         st.session_state.run_function = True 
 
     if st.session_state.run_function:
-        result = prediction_simple(model_rfc, features_cat,  df_encoded.columns, standard_scaler,
-                                    st.session_state['obs'],
-                                    st.session_state['obsm'],
-                                    st.session_state['choc'],
-                                    )
+        opt = {}
+        for x in features_cat:
+            opt[x] = [int(st.session_state[x].split(' - ')[0])]
+        result = prediction_simple(model_rfc, features_cat,  df_encoded.columns, standard_scaler, opt)
         dico_result = {'grave' : 'dans un état grave ou tuée', 'léger' : 'indemne ou blessé léger'}
         st.write("La personne se retrouvera " + dico_result[result])
         st.session_state.run_function = False  # Reset du flag après exécution
     
 
-def prediction_simple(modele, features_cat, cols, normalisation, obs, obsm, choc ):
-    data_cycl = {'obs':[obs], 'obsm':[obsm], 'choc': [choc], 'manv':[1], 'place':[1], 'catu':[1], 'secu1':[2], 'lum':[1],
-             'agg':[1], 'int': [1], 'atm':[1], 'col':[7], 'catr':[3], 'circ':[2], 'prof':[1], 'plan':[1],
-             'surf':[1], 'infra':[0], 'situ':[1], 'nbv':[1], 'vma':[80]}
+def prediction_simple(modele, features_cat, cols, normalisation, opt ):
+    print(opt)
+    data_cycl = opt
+    data_cycl['nbv'] = [1]
+    data_cycl['vma'] = [80]
     X_cycl = pd.DataFrame(data=data_cycl, index=[0])
     X_cycl_encoded= pd.get_dummies(X_cycl, columns=features_cat)
 
